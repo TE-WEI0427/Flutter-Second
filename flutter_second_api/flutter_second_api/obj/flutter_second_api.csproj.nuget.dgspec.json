@@ -1,24 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "D:\\VisualDev\\Vs2022\\flutter_second_api\\flutter_second_api\\flutter_second_api.csproj": {}
+    "D:\\AndyWorkspace\\Project\\Flutter-Second\\flutter_second_api\\flutter_second_api\\flutter_second_api.csproj": {}
   },
   "projects": {
-    "D:\\VisualDev\\Vs2022\\flutter_second_api\\flutter_second_api\\flutter_second_api.csproj": {
+    "D:\\AndyWorkspace\\Project\\Flutter-Second\\flutter_second_api\\flutter_second_api\\flutter_second_api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\VisualDev\\Vs2022\\flutter_second_api\\flutter_second_api\\flutter_second_api.csproj",
+        "projectUniqueName": "D:\\AndyWorkspace\\Project\\Flutter-Second\\flutter_second_api\\flutter_second_api\\flutter_second_api.csproj",
         "projectName": "flutter_second_api",
-        "projectPath": "D:\\VisualDev\\Vs2022\\flutter_second_api\\flutter_second_api\\flutter_second_api.csproj",
-        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "D:\\VisualDev\\Vs2022\\flutter_second_api\\flutter_second_api\\obj\\",
+        "projectPath": "D:\\AndyWorkspace\\Project\\Flutter-Second\\flutter_second_api\\flutter_second_api\\flutter_second_api.csproj",
+        "packagesPath": "C:\\Users\\zhtech\\.nuget\\packages\\",
+        "outputPath": "D:\\AndyWorkspace\\Project\\Flutter-Second\\flutter_second_api\\flutter_second_api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
         ],
         "configFilePaths": [
-          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\zhtech\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -66,6 +66,10 @@
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
               "version": "[6.0.6, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.1, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -11,9 +13,11 @@ namespace flutter_second_api.Controllers
     public class UserController : ControllerBase
     {
         private readonly DataContext _context;
-        private IConfiguration _config;
+        private readonly IConfiguration _config;
 
-        public UserController(DataContext context, IConfiguration config) 
+        string resultCode = "10";
+
+        public UserController(DataContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
@@ -22,13 +26,14 @@ namespace flutter_second_api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserRegisterRequest request)
         {
+
             if (_context.Users.Any(u => u.Email == request.Email))
             {
                 return BadRequest("User already exists.");
             }
 
-            CreatePasswordHash(request.Password, 
-                out byte[] PasswordHash, 
+            CreatePasswordHash(request.Password,
+                out byte[] PasswordHash,
                 out byte[] PasswordSalt);
 
             var user = new User
@@ -48,31 +53,46 @@ namespace flutter_second_api.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(UserLoginRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            JObject jo = new JObject();
 
-            if (user == null)
+            try
             {
-                return BadRequest("User not found.");
-            }
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
-            if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
+                if (user == null)
+                {
+                    return BadRequest("User not found.");
+                }
+
+                if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
+                {
+                    return BadRequest("Password is incorrect.");
+                }
+
+                if (user.VerifiedAt == null)
+                {
+                    return BadRequest("Not verified");
+                }
+
+                DateTime dt = DateTime.Now;
+
+                if (user.VerifiedAt < dt.AddDays(-1))
+                {
+                    string msg = await RefreshToken(user, dt);
+                }
+                    
+                jo.Add("msg", $"Welcome back, {user.Email}! :)");
+                jo.Add("resultCode", resultCode);
+
+                return Ok(JsonConvert.SerializeObject(jo, Formatting.Indented));
+            }
+            catch (Exception ex)
             {
-                return BadRequest("Password is incorrect.");
+                resultCode = "20";
+                jo.Add("resultCode", resultCode);
+                jo.Add("msg", ex.Message);
+                return Ok(JsonConvert.SerializeObject(jo, Formatting.Indented));
             }
-
-            if (user.VerifiedAt == null)
-            {
-                return BadRequest("Not verified");
-            }
-
-            DateTime dt = DateTime.Now;
-
-            if (user.VerifiedAt < dt)
-            {
-                string msg = await RefreshToken(user, dt);
-            }
-
-            return Ok($"Welcome back, {user.Email}! :)");
         }
 
         [HttpPost("verify")]
@@ -126,18 +146,21 @@ namespace flutter_second_api.Controllers
             }
 
             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            
+
+            DateTime dt = DateTime.Now;
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
             user.PasswordResstToken = null;
             user.ResetTokenExpires = null;
+            user.VerifiedAt = DateTime.Now;
+            user.VerificationToken = CreateToken(user.Email, dt.AddDays(1));
 
             await _context.SaveChangesAsync();
 
             return Ok("密碼重設成功");
         }
 
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt) 
+        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
             using (var hmac = new HMACSHA512())
             {

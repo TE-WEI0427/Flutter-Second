@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_second/page/forgot_Password.dart';
-import 'package:flutter_second/page/terms_Of_Service.dart';
-import 'package:flutter_second/page/verify_Email.dart';
+import 'package:flutter_second/Models/Login/user_login.dart';
+import 'package:flutter_second/Others/common_components.dart';
+// import 'package:flutter_second/page/forgot_password.dart';
+import 'package:flutter_second/Pages/Login/terms_of_service.dart';
+import 'package:flutter_second/Pages/Login/verify_email.dart';
+import 'package:flutter_second/Service/login_service.dart';
+import 'package:flutter_second/globals.dart' as globals;
 
+/// Login頁面
 class Login extends StatelessWidget {
   const Login({Key? key}) : super(key: key);
 
@@ -32,12 +37,35 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
 
-  void _trySubmitForm() {
+  // 登入按鈕事件
+  void _login() async {
     final bool? isValid = _form.currentState?.validate();
     if (isValid == true) {
-      debugPrint('Change Password Successful !');
-      debugPrint('Email:${_email.text}');
-      debugPrint('Password:${_password.text}');
+      // debugPrint('All check pass!');
+      // debugPrint('Email:${_email.text}');
+      // debugPrint('Password:${_password.text}');
+
+      String message = "";
+
+      LoginService loginService = LoginService();
+      UserLogin userLogin = UserLogin(_email.text, _password.text);
+
+      var result = await loginService.login(userLogin);
+
+      // set message
+      if (result.toString().contains("resultCode")) {
+        message = result["msg"];
+      } else {
+        if (result.toString().contains("status")) {
+          message = result["errors"].toString();
+        } else {
+          message = result.toString();
+        }
+      }
+
+      // show message
+      Future.delayed(
+          Duration.zero, () => showAlertDialog(context, "提示", message));
     }
   }
 
@@ -48,6 +76,7 @@ class _LoginPageState extends State<LoginPage> {
         title: const Text("Login"),
       ),
       body: SingleChildScrollView(
+          child: Form(
         key: _form,
         child: Column(
           children: <Widget>[
@@ -74,40 +103,44 @@ class _LoginPageState extends State<LoginPage> {
                   }
                   return null;
                 },
-                onChanged: (value) => _email.text = value,
+                // onChanged: (value) => _email.text = value
               ),
             ),
             Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: TextFormField(
-                controller: _password,
-                obscureText: _isObscure,
-                decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lock),
-                    labelText: "Password *",
-                    hintText: "Your account password.",
-                    suffixIcon: IconButton(
-                        icon: Icon(_isObscure
-                            ? Icons.visibility
-                            : Icons.visibility_off),
-                        onPressed: () {
-                          setState(() {
-                            _isObscure = !_isObscure;
-                          });
-                        })),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'This field is required';
-                  }
-                  return null;
-                },
-                onChanged: (value) => _password.text = value,
-              ),
+                  controller: _password,
+                  obscureText: _isObscure,
+                  decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.lock),
+                      labelText: "Password *",
+                      hintText: "Your account password.",
+                      suffixIcon: IconButton(
+                          icon: Icon(_isObscure
+                              ? Icons.visibility
+                              : Icons.visibility_off),
+                          onPressed: () {
+                            setState(() {
+                              _isObscure = !_isObscure;
+                            });
+                          })),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'This field is required';
+                    }
+                    return null;
+                  }),
             ),
             TextButton(
               onPressed: () {
-                runApp(const VerifyEmail());
+                globals.goPage = "Forgot Password";
+                // runApp(const VerifyEmail());
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const VerifyEmailPage()),
+                );
               },
               child: const Text(
                 'Forgot Password',
@@ -119,8 +152,8 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(
               width: MediaQuery.of(context).size.width - 48.0,
               height: 48.0,
-              child: ElevatedButton(
-                  onPressed: _trySubmitForm, child: const Text("Login")),
+              child:
+                  ElevatedButton(onPressed: _login, child: const Text("Login")),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -128,18 +161,23 @@ class _LoginPageState extends State<LoginPage> {
                 const Text('Does not have account?'),
                 TextButton(
                   child: const Text(
-                    'Sign in',
+                    'Register',
                     style: TextStyle(fontSize: 15),
                   ),
                   onPressed: () {
-                    runApp(const TermsOfService());
+                    // runApp(const TermsOfService());
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const TermsOfServicePage()),
+                    );
                   },
                 )
               ],
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

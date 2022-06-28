@@ -16,7 +16,7 @@ namespace flutter_second_api.Controllers
             _emailService = emailService;
         }
 
-        [HttpPost]
+        [HttpPost("SendEmail")]
         public IActionResult SendEmail(EmailDTO request)
         {
             _emailService.SendEmail(request);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_second/page/login.dart';
-import 'package:flutter_second/page/verify_Email.dart';
+import 'package:flutter_second/Pages/Login/login.dart';
+import 'package:flutter_second/Pages/Login/verify_email.dart';
+import 'package:flutter_second/globals.dart' as globals;
 
 class TermsOfService extends StatelessWidget {
   const TermsOfService({Key? key}) : super(key: key);
@@ -110,14 +111,15 @@ class _TermsOfServicePageState extends State<TermsOfServicePage> {
               minWidth: 40.0,
               child: OutlinedButton(
                 onPressed: () {
+                  globals.goPage = "Register";
                   runApp(const VerifyEmail());
                 },
-                child: const Text('Agree'),
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
+                child: const Text('Agree'),
               ),
             ),
             const SizedBox(
@@ -129,12 +131,12 @@ class _TermsOfServicePageState extends State<TermsOfServicePage> {
                 onPressed: () {
                   runApp(const Login());
                 },
-                child: const Text('Disagree'),
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
+                child: const Text('Disagree'),
               ),
             )
           ])
