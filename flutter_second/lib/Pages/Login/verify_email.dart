@@ -1,10 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_second/Models/Login/send_email.dart';
+import 'package:flutter_second/Others/common_components.dart';
+import 'package:flutter_second/Others/html_code.dart';
 import 'package:flutter_second/Pages/Login/login.dart';
-import 'package:flutter_second/Pages/Login/register.dart';
+import 'package:flutter_second/Pages/Login/register_forgot_password.dart';
 import 'package:flutter_second/Service/login_service.dart';
 import 'package:flutter_second/globals.dart' as globals;
-import 'package:flutter_second/Pages/Login/forgot_password.dart';
 
 class VerifyEmail extends StatelessWidget {
   const VerifyEmail({Key? key}) : super(key: key);
@@ -34,41 +36,84 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
 
   late bool _isButtonDisabled;
 
+  LoginService loginService = LoginService();
+  String message = "";
+
   @override
   // ignore: must_call_super
   void initState() {
     _isButtonDisabled = false;
   }
 
-  // ignore: non_constant_identifier_names
-  void SubmitVerificationCode() {
-    // ignore: avoid_print
-    print("VerificationCode : ${_verCode.text}");
-    // ignore: avoid_print
-    print("GoPage : ${globals.goPage}");
-    switch (globals.goPage) {
-      case "Forgot Password":
-        // runApp(const ForgotPassword());
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
-        );
-        break;
-      case "Register":
-        // runApp(const Register());
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const RegisterPage()),
-        );
-        break;
+  void getVerificationCode() async {
+    // debugPrint('Email:${_email.text}');
+
+    SendEmail sendEmail = SendEmail(_email.text, "App帳號申請:驗證信箱", emailHtml);
+
+    var res = await loginService.getVerificationCode(sendEmail);
+
+    // set message
+    if (res.toString().contains("resultCode")) {
+      message = res["msg"];
+      debugPrint('[msg]:[${res["msg"]}]');
+      globals.email = _email.text;
+      if (res["resultCode"] == "10") {
+        // show message
+        Future.delayed(
+            Duration.zero, () => showAlertDialog(context, "提示", message));
+      }
+    } else {
+      if (res.toString().contains("status")) {
+        Map maps = jsonDecode(res);
+        message = maps["errors"].toString();
+      } else {
+        message = res.toString();
+      }
+      // show message
+      debugPrint('[msg]:[$message]');
+      Future.delayed(
+          Duration.zero, () => showAlertDialog(context, "提示", message));
     }
   }
 
-  void getVerificationCode() {
-    LoginService loginService = LoginService();
-    SendEmail sendEmail =
-        SendEmail(_email.text, "Verification Code", "<i>Test</i>");
-    loginService.getVerificationCode(sendEmail);
+  void submitVerificationCode() async {
+    // debugPrint("VerificationCode : ${_verCode.text}");
+    debugPrint("GoPage : ${globals.goPage}");
+
+    var res = await loginService.submitVerificationCode(_verCode.text);
+
+    // set message
+    if (res.toString().contains("resultCode")) {
+      message = res["msg"];
+      debugPrint('[msg]:[${res["msg"]}]');
+      if (res["resultCode"] == "10") {
+        globals.email = res["userEmail"];
+        // runApp(const Register());
+        // ignore: use_build_context_synchronously
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SignInPage()),
+        );
+      } else {
+        // show message
+        debugPrint('[msg]:[${res["msg"]}]');
+        Future.delayed(
+            Duration.zero, () => showAlertDialog(context, "提示", message));
+        globals.email = "";
+      }
+    } else {
+      globals.email = "";
+      if (res.toString().contains("status")) {
+        Map maps = jsonDecode(res);
+        message = maps["errors"].toString();
+      } else {
+        message = res.toString();
+      }
+      // show message
+      debugPrint('[msg]:[$message]');
+      Future.delayed(
+          Duration.zero, () => showAlertDialog(context, "提示", message));
+    }
   }
 
   @override
@@ -155,7 +200,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                 height: 48.0,
                 child: ElevatedButton(
                     onPressed: _verCode.text.isNotEmpty
-                        ? SubmitVerificationCode
+                        ? submitVerificationCode
                         : null,
                     child: const Text("Submit")),
               );

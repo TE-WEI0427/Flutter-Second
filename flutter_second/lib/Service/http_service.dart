@@ -9,14 +9,18 @@ final client = http.Client();
 getHttp(String uri) async {
   try {
     var url = Uri.parse(domain + uri);
+
     final response = await client.get(url);
 
-    // Map data = jsonDecode(response.body);
+    if (response.statusCode == 400) {
+      return response.body;
+    }
 
     if (response.statusCode == 200) {
-      return response.body;
+      Map result = jsonDecode(response.body);
+      return result;
     } else {
-      return response.body;
+      debugPrint(response.body);
     }
   } catch (e) {
     return e.toString();

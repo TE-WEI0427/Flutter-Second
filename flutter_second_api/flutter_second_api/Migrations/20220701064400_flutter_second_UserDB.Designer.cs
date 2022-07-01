@@ -12,7 +12,7 @@ using flutter_second_api.Data;
 namespace flutter_second_api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220626043548_flutter_second_UserDB")]
+    [Migration("20220701064400_flutter_second_UserDB")]
     partial class flutter_second_UserDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -59,6 +59,33 @@ namespace flutter_second_api.Migrations
                     b.HasKey("id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("flutter_second_api.Models.VerifyCode", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"), 1L, 1);
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("VerificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("id");
+
+                    b.ToTable("VerifyCodes");
                 });
 #pragma warning restore 612, 618
         }

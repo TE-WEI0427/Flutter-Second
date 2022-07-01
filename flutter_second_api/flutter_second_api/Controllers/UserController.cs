@@ -53,7 +53,7 @@ namespace flutter_second_api.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(UserLoginRequest request)
         {
-            JObject jo = new JObject();
+            JObject jo = new();
 
             try
             {
@@ -81,8 +81,9 @@ namespace flutter_second_api.Controllers
                     string msg = await RefreshToken(user, dt);
                 }
                     
-                jo.Add("msg", $"Welcome back, {user.Email}! :)");
+                jo.Add("msg", $"Welcome back, {user.Email}! (☝ ՞ਊ ՞）☝");
                 jo.Add("resultCode", resultCode);
+                jo.Add("token", user.VerificationToken);
 
                 return Ok(JsonConvert.SerializeObject(jo, Formatting.Indented));
             }
@@ -181,7 +182,7 @@ namespace flutter_second_api.Controllers
             }
         }
 
-        private string CreateRandomToken()
+        private static string CreateRandomToken()
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
         }
@@ -193,7 +194,7 @@ namespace flutter_second_api.Controllers
         /// <returns></returns>
         private string CreateToken(string email, DateTime dt)
         {
-            List<Claim> claims = new List<Claim>();
+            List<Claim> claims = new();
 
             // 要加入 token 的資料
             if (email != "")

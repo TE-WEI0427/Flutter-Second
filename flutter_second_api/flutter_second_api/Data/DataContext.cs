@@ -15,5 +15,6 @@
 
         public DbSet<User> Users => Set<User>();
 
+        public DbSet<VerifyCode> VerifyCodes => Set<VerifyCode>();
     }
 }

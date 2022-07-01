@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_second/Pages/Login/login.dart';
+import 'package:flutter_second/globals.dart' as globals;
 
-class Register extends StatelessWidget {
-  const Register({Key? key}) : super(key: key);
+class SignIn extends StatelessWidget {
+  const SignIn({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -10,26 +11,30 @@ class Register extends StatelessWidget {
       // Remove the debug banner
       debugShowCheckedModeBanner: false,
       title: 'Register',
-      home: RegisterPage(),
+      home: SignInPage(),
     );
   }
 }
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key}) : super(key: key);
+class SignInPage extends StatefulWidget {
+  const SignInPage({Key? key}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
-  _RegisterPageState createState() => _RegisterPageState();
+  _SignInPageState createState() => _SignInPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _SignInPageState extends State<SignInPage> {
   bool _isObscure = true;
 
   final GlobalKey<FormState> _form = GlobalKey<FormState>();
-  final TextEditingController _email = TextEditingController();
+  final TextEditingController _email =
+      TextEditingController(text: globals.email);
   final TextEditingController _password = TextEditingController();
   final TextEditingController _confirmPassword = TextEditingController();
+
+  final Text pageTitle =
+      Text(globals.goPage, style: const TextStyle(fontSize: 20));
 
   void _trySubmitForm() {
     final bool? isValid = _form.currentState?.validate();
@@ -54,7 +59,7 @@ class _RegisterPageState extends State<RegisterPage> {
               //   return const LoginPage();
               // }));
             }),
-        title: const Text('Register'),
+        title: pageTitle,
       ),
       // Change to buildColumn() for the other column example
       body: SingleChildScrollView(
@@ -65,10 +70,7 @@ class _RegisterPageState extends State<RegisterPage> {
               Container(
                   alignment: Alignment.center,
                   padding: const EdgeInsets.all(10),
-                  child: const Text(
-                    'Register An Account',
-                    style: TextStyle(fontSize: 20),
-                  )),
+                  child: pageTitle),
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 24.0, vertical: 16.0),
@@ -79,12 +81,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       labelText: "Email *",
                       hintText: "Enter your email.",
                     ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'This field is required';
-                      }
-                      return null;
-                    }),
+                    enabled: false),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(

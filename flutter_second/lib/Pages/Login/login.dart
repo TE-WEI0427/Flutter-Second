@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_second/Models/Login/user_login.dart';
 import 'package:flutter_second/Others/common_components.dart';
@@ -50,16 +52,21 @@ class _LoginPageState extends State<LoginPage> {
       LoginService loginService = LoginService();
       UserLogin userLogin = UserLogin(_email.text, _password.text);
 
-      var result = await loginService.login(userLogin);
+      var res = await loginService.login(userLogin);
 
       // set message
-      if (result.toString().contains("resultCode")) {
-        message = result["msg"];
+      if (res.toString().contains("resultCode")) {
+        message = res["msg"];
+        if (res["resultCode"] == "10") {
+          globals.token = res["token"];
+          debugPrint('[token]:[${res["token"]}]');
+        }
       } else {
-        if (result.toString().contains("status")) {
-          message = result["errors"].toString();
+        if (res.toString().contains("status")) {
+          Map maps = jsonDecode(res);
+          message = maps["errors"].toString();
         } else {
-          message = result.toString();
+          message = res.toString();
         }
       }
 
@@ -165,6 +172,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(fontSize: 15),
                   ),
                   onPressed: () {
+                    globals.goPage = "Register An Account";
                     // runApp(const TermsOfService());
                     Navigator.push(
                       context,

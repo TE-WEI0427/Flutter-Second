@@ -11,4 +11,9 @@ class LoginService {
   getVerificationCode(SendEmail sendEmail) {
     return postHttp("/api/Email/SendEmail", sendEmail.toJson());
   }
+
+  submitVerificationCode(String verificationCode) {
+    return getHttp(
+        "/api/Verification/CheckVerificationCode?verificationCode=$verificationCode");
+  }
 }
