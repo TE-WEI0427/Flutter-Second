@@ -50,29 +50,52 @@ class _LoginPageState extends State<LoginPage> {
       String message = "";
 
       LoginService loginService = LoginService();
-      UserLogin userLogin = UserLogin(_email.text, _password.text);
 
-      var res = await loginService.login(userLogin);
+      var res = await loginService.verify(globals.token.getItem("token"));
 
-      // set message
       if (res.toString().contains("resultCode")) {
         message = res["msg"];
         if (res["resultCode"] == "10") {
-          globals.token = res["token"];
+          globals.token.setItem("token", res["token"]);
+
           debugPrint('[token]:[${res["token"]}]');
-        }
-      } else {
-        if (res.toString().contains("status")) {
-          Map maps = jsonDecode(res);
-          message = maps["errors"].toString();
+          UserLogin userLogin = UserLogin(_email.text, _password.text);
+
+          res = await loginService.login(userLogin);
+
+          // set message
+          if (res.toString().contains("resultCode")) {
+            message = res["msg"];
+            if (res["resultCode"] == "10") {
+              globals.token.setItem("token", res["token"]);
+              debugPrint('[token]:[${res["token"]}]');
+            }
+          } else {
+            if (res.toString().contains("status")) {
+              Map maps = jsonDecode(res);
+              message = maps["errors"].toString();
+            } else {
+              message = res.toString();
+            }
+          }
+
+          // show message
+          debugPrint('[msg]:[$message]');
+          Future.delayed(
+              Duration.zero, () => showAlertDialog(context, "提示", message));
         } else {
-          message = res.toString();
+          if (res.toString().contains("status")) {
+            Map maps = jsonDecode(res);
+            message = maps["errors"].toString();
+          } else {
+            message = res.toString();
+          }
+          // show message
+          debugPrint('[msg]:[$message]');
+          Future.delayed(
+              Duration.zero, () => showAlertDialog(context, "提示", message));
         }
       }
-
-      // show message
-      Future.delayed(
-          Duration.zero, () => showAlertDialog(context, "提示", message));
     }
   }
 
@@ -141,7 +164,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             TextButton(
               onPressed: () {
-                globals.goPage = "Forgot Password";
+                globals.goPage.setItem("goPage", "Forgot Password");
                 // runApp(const VerifyEmail());
                 Navigator.push(
                   context,
@@ -172,7 +195,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(fontSize: 15),
                   ),
                   onPressed: () {
-                    globals.goPage = "Register An Account";
+                    globals.goPage.setItem("goPage", "Register An Account");
                     // runApp(const TermsOfService());
                     Navigator.push(
                       context,

@@ -16,4 +16,20 @@ class LoginService {
     return getHttp(
         "/api/Verification/CheckVerificationCode?verificationCode=$verificationCode");
   }
+
+  submitAccountForm(UserRegister userRegister) {
+    return postHttp("/api/User/Register", userRegister.toJson());
+  }
+
+  verify(String token) {
+    return getHttp("/api/User/Verify?token=$token");
+  }
+
+  forgotPassword(String email) {
+    return getHttp("/api/User/forgot-password?email=$email");
+  }
+
+  resetPassword(ResetPassword resetPassword) {
+    return postHttp("/api/User/reset-password", resetPassword.toJson());
+  }
 }

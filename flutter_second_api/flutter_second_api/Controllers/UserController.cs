@@ -23,31 +23,46 @@ namespace flutter_second_api.Controllers
             _config = config;
         }
 
-        [HttpPost("register")]
+        [HttpPost("Register")]
         public async Task<IActionResult> Register(UserRegisterRequest request)
         {
+            JObject jo = new();
 
-            if (_context.Users.Any(u => u.Email == request.Email))
+            try
             {
-                return BadRequest("User already exists.");
+                if (_context.Users.Any(u => u.Email == request.Email))
+                {
+                    return BadRequest("User already exists.");
+                }
+
+                CreatePasswordHash(request.Password,
+                    out byte[] PasswordHash,
+                    out byte[] PasswordSalt);
+
+                var user = new User
+                {
+                    Email = request.Email,
+                    PasswordHash = PasswordHash,
+                    PasswordSalt = PasswordSalt,
+                    VerificationToken = CreateRandomToken()
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                jo.Add("msg", $"User successfully created!, {user.Email}! (☝ ՞ਊ ՞）☝");
+                jo.Add("resultCode", resultCode);
+                jo.Add("token", user.VerificationToken);
+
+                return Ok(JsonConvert.SerializeObject(jo, Formatting.Indented));
             }
-
-            CreatePasswordHash(request.Password,
-                out byte[] PasswordHash,
-                out byte[] PasswordSalt);
-
-            var user = new User
+            catch (Exception ex)
             {
-                Email = request.Email,
-                PasswordHash = PasswordHash,
-                PasswordSalt = PasswordSalt,
-                VerificationToken = CreateRandomToken()
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return Ok("User successfully created!");
+                resultCode = "20";
+                jo.Add("resultCode", resultCode);
+                jo.Add("msg", ex.Message);
+                return Ok(JsonConvert.SerializeObject(jo, Formatting.Indented));
+            }
         }
 
         [HttpPost("Login")]
@@ -61,17 +76,17 @@ namespace flutter_second_api.Controllers
 
                 if (user == null)
                 {
-                    return BadRequest("User not found.");
+                    return BadRequest("查無使用者.");
                 }
 
                 if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
                 {
-                    return BadRequest("Password is incorrect.");
+                    return BadRequest("密碼不正確.");
                 }
 
                 if (user.VerifiedAt == null)
                 {
-                    return BadRequest("Not verified");
+                    return BadRequest("帳戶尚未驗證");
                 }
 
                 DateTime dt = DateTime.Now;
@@ -80,7 +95,7 @@ namespace flutter_second_api.Controllers
                 {
                     string msg = await RefreshToken(user, dt);
                 }
-                    
+
                 jo.Add("msg", $"Welcome back, {user.Email}! (☝ ՞ਊ ՞）☝");
                 jo.Add("resultCode", resultCode);
                 jo.Add("token", user.VerificationToken);
@@ -96,69 +111,119 @@ namespace flutter_second_api.Controllers
             }
         }
 
-        [HttpPost("verify")]
+        [HttpGet("Verify")]
         public async Task<IActionResult> Verify(string token)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+            JObject jo = new();
 
-            if (user == null)
+            try
             {
-                return BadRequest("Invaild token.");
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+
+                if (user == null)
+                {
+                    return BadRequest("Invaild token.");
+                }
+
+                DateTime dt = DateTime.Now;
+
+                user.VerifiedAt = DateTime.Now;
+                user.VerificationToken = CreateToken(user.Email, dt.AddDays(1));
+
+                await _context.SaveChangesAsync();
+
+                jo.Add("msg", $"User verified, {user.Email}! (☝ ՞ਊ ՞）☝");
+                jo.Add("resultCode", resultCode);
+                jo.Add("token", user.VerificationToken);
+
+                return Ok(JsonConvert.SerializeObject(jo, Formatting.Indented));
             }
-
-            DateTime dt = DateTime.Now;
-
-            user.VerifiedAt = DateTime.Now;
-            user.VerificationToken = CreateToken(user.Email, dt.AddDays(1));
-
-            await _context.SaveChangesAsync();
-
-            return Ok("User verified! :)");
+            catch (Exception ex)
+            {
+                resultCode = "20";
+                jo.Add("resultCode", resultCode);
+                jo.Add("msg", ex.Message);
+                return Ok(JsonConvert.SerializeObject(jo, Formatting.Indented));
+            }
         }
 
-        [HttpPost("forgot-password")]
+        [HttpGet("forgot-password")]
         public async Task<IActionResult> ForgotPassword(string email)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            JObject jo = new();
 
-            if (user == null)
+            try
             {
-                return BadRequest("User not found.");
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+                if (user == null)
+                {
+                    return BadRequest("User not found.");
+                }
+
+                DateTime dt = DateTime.Now.AddDays(1);
+
+                user.PasswordResstToken = CreateToken(email, dt);
+                user.ResetTokenExpires = dt;
+
+                await _context.SaveChangesAsync();
+
+
+                jo.Add("msg", $"請重設密碼, {user.Email}! (☝ ՞ਊ ՞）☝");
+                jo.Add("resultCode", resultCode);
+                jo.Add("token", user.VerificationToken);
+                jo.Add("resetToken", user.PasswordResstToken);
+
+                return Ok(JsonConvert.SerializeObject(jo, Formatting.Indented));
             }
-
-            DateTime dt = DateTime.Now.AddDays(1);
-
-            user.PasswordResstToken = CreateToken(email, dt);
-            user.ResetTokenExpires = dt;
-
-            await _context.SaveChangesAsync();
-
-            return Ok("請重設密碼");
+            catch (Exception ex)
+            {
+                resultCode = "20";
+                jo.Add("resultCode", resultCode);
+                jo.Add("msg", ex.Message);
+                return Ok(JsonConvert.SerializeObject(jo, Formatting.Indented));
+            }
         }
 
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.PasswordResstToken == request.Token);
+            JObject jo = new();
 
-            if (user == null || user.ResetTokenExpires < DateTime.Now)
+            try
             {
-                return BadRequest("Invaild token.");
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.PasswordResstToken == request.Token);
+
+                if (user == null || user.ResetTokenExpires < DateTime.Now)
+                {
+                    return BadRequest("Invaild token.");
+                }
+
+                CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+                DateTime dt = DateTime.Now;
+                user.PasswordHash = passwordHash;
+                user.PasswordSalt = passwordSalt;
+                user.PasswordResstToken = null;
+                user.ResetTokenExpires = null;
+                user.VerifiedAt = DateTime.Now;
+                user.VerificationToken = CreateToken(user.Email, dt.AddDays(1));
+
+                await _context.SaveChangesAsync();
+
+                jo.Add("msg", $"密碼重設成功, {user.Email}! (☝ ՞ਊ ՞）☝");
+                jo.Add("resultCode", resultCode);
+                jo.Add("token", user.VerificationToken);
+
+                return Ok(JsonConvert.SerializeObject(jo, Formatting.Indented));
             }
-
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-            DateTime dt = DateTime.Now;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
-            user.PasswordResstToken = null;
-            user.ResetTokenExpires = null;
-            user.VerifiedAt = DateTime.Now;
-            user.VerificationToken = CreateToken(user.Email, dt.AddDays(1));
-
-            await _context.SaveChangesAsync();
-
-            return Ok("密碼重設成功");
+            catch (Exception ex)
+            {
+                resultCode = "20";
+                jo.Add("resultCode", resultCode);
+                jo.Add("msg", ex.Message);
+                return Ok(JsonConvert.SerializeObject(jo, Formatting.Indented));
+            }
         }
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)

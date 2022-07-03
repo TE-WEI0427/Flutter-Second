@@ -1,5 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_second/Models/Login/user_login.dart';
+import 'package:flutter_second/Others/common_components.dart';
 import 'package:flutter_second/Pages/Login/login.dart';
+import 'package:flutter_second/Service/login_service.dart';
 import 'package:flutter_second/globals.dart' as globals;
 
 class SignIn extends StatelessWidget {
@@ -10,7 +15,7 @@ class SignIn extends StatelessWidget {
     return const MaterialApp(
       // Remove the debug banner
       debugShowCheckedModeBanner: false,
-      title: 'Register',
+      // title: 'Register',
       home: SignInPage(),
     );
   }
@@ -29,20 +34,124 @@ class _SignInPageState extends State<SignInPage> {
 
   final GlobalKey<FormState> _form = GlobalKey<FormState>();
   final TextEditingController _email =
-      TextEditingController(text: globals.email);
+      TextEditingController(text: globals.email.getItem("email"));
   final TextEditingController _password = TextEditingController();
   final TextEditingController _confirmPassword = TextEditingController();
 
-  final Text pageTitle =
-      Text(globals.goPage, style: const TextStyle(fontSize: 20));
+  final Text pageTitle = Text(globals.goPage.getItem("goPage"),
+      style: const TextStyle(fontSize: 20));
 
-  void _trySubmitForm() {
+  void submitAccountForm() async {
     final bool? isValid = _form.currentState?.validate();
     if (isValid == true) {
-      debugPrint('Register An Account!');
-      debugPrint('Email:${_email.text}');
-      debugPrint('Password:${_password.text}');
-      debugPrint('ConfirmPassword:${_confirmPassword.text}');
+      // debugPrint('Register An Account!');
+      // debugPrint('Email:${_email.text}');
+      // debugPrint('Password:${_password.text}');
+      // debugPrint('ConfirmPassword:${_confirmPassword.text}');
+
+      String message = "";
+
+      LoginService loginService = LoginService();
+      UserRegister userRegister =
+          UserRegister(_email.text, _password.text, _confirmPassword.text);
+
+      var res = await loginService.submitAccountForm(userRegister);
+
+      // set message
+      if (res.toString().contains("resultCode")) {
+        message = res["msg"];
+        if (res["resultCode"] == "10") {
+          globals.token.setItem("token", res["token"]);
+          debugPrint('[token]:[${res["token"]}]');
+
+          runApp(const Login());
+        }
+      } else {
+        if (res.toString().contains("status")) {
+          Map maps = jsonDecode(res);
+          message = maps["errors"].toString();
+        } else {
+          message = res.toString();
+        }
+        // show message
+        debugPrint('[msg]:[$message]');
+        Future.delayed(
+            Duration.zero, () => showAlertDialog(context, "提示", message));
+      }
+    }
+  }
+
+  void submitEditPassword() async {
+    final bool? isValid = _form.currentState?.validate();
+    if (isValid == true) {
+      // debugPrint('Register An Account!');
+      // debugPrint('Email:${_email.text}');
+      // debugPrint('Password:${_password.text}');
+      // debugPrint('ConfirmPassword:${_confirmPassword.text}');
+
+      String message = "";
+
+      LoginService loginService = LoginService();
+
+      var res = await loginService.forgotPassword(_email.text);
+
+      // set message
+      if (res.toString().contains("resultCode")) {
+        message = res["msg"];
+        debugPrint('[msg]:[${res["msg"]}]');
+        if (res["resultCode"] == "10") {
+          globals.token.setItem("token", res["token"]);
+          globals.token.setItem("resetToken", res["resetToken"]);
+          debugPrint('[token]:[${res["token"]}]');
+          debugPrint('[resetToken]:[${res["resetToken"]}]');
+
+          ResetPassword resetPassword = ResetPassword(
+              globals.token.getItem("resetToken"),
+              _password.text,
+              _confirmPassword.text);
+
+          res = await loginService.resetPassword(resetPassword);
+
+          // set message
+          if (res.toString().contains("resultCode")) {
+            message = res["msg"];
+            debugPrint('[msg]:[${res["msg"]}]');
+            if (res["resultCode"] == "10") {
+              globals.token.setItem("token", res["token"]);
+              globals.token.setItem("resetToken", "");
+              debugPrint('[token]:[${res["token"]}]');
+              // runApp(const Login());
+              // ignore: use_build_context_synchronously
+              Navigator.push(context,
+                  MaterialPageRoute<void>(builder: (BuildContext context) {
+                return const LoginPage();
+              }));
+            }
+          } else {
+            if (res.toString().contains("status")) {
+              Map maps = jsonDecode(res);
+              message = maps["errors"].toString();
+            } else {
+              message = res.toString();
+            }
+            // show message
+            debugPrint('[msg]:[$message]');
+            Future.delayed(
+                Duration.zero, () => showAlertDialog(context, "提示", message));
+          }
+        }
+      } else {
+        if (res.toString().contains("status")) {
+          Map maps = jsonDecode(res);
+          message = maps["errors"].toString();
+        } else {
+          message = res.toString();
+        }
+        // show message
+        debugPrint('[msg]:[$message]');
+        Future.delayed(
+            Duration.zero, () => showAlertDialog(context, "提示", message));
+      }
     }
   }
 
@@ -142,7 +251,10 @@ class _SignInPageState extends State<SignInPage> {
                 width: MediaQuery.of(context).size.width - 48.0,
                 height: 48.0,
                 child: ElevatedButton(
-                    onPressed: _trySubmitForm, child: const Text("Submit")),
+                    onPressed: globals.goPage.getItem("goPage") == "Register"
+                        ? submitAccountForm
+                        : submitEditPassword,
+                    child: const Text("Submit")),
               ),
             ],
           ),

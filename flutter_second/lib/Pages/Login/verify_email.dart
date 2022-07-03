@@ -56,7 +56,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
     if (res.toString().contains("resultCode")) {
       message = res["msg"];
       debugPrint('[msg]:[${res["msg"]}]');
-      globals.email = _email.text;
+      globals.email.setItem("email", _email.text);
       if (res["resultCode"] == "10") {
         // show message
         Future.delayed(
@@ -78,7 +78,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
 
   void submitVerificationCode() async {
     // debugPrint("VerificationCode : ${_verCode.text}");
-    debugPrint("GoPage : ${globals.goPage}");
+    debugPrint("GoPage : ${globals.goPage.getItem("goPage")}");
 
     var res = await loginService.submitVerificationCode(_verCode.text);
 
@@ -87,7 +87,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
       message = res["msg"];
       debugPrint('[msg]:[${res["msg"]}]');
       if (res["resultCode"] == "10") {
-        globals.email = res["userEmail"];
+        globals.email.setItem("email", res["userEmail"]);
         // runApp(const Register());
         // ignore: use_build_context_synchronously
         Navigator.push(
@@ -99,10 +99,10 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
         debugPrint('[msg]:[${res["msg"]}]');
         Future.delayed(
             Duration.zero, () => showAlertDialog(context, "提示", message));
-        globals.email = "";
+        globals.email.setItem("email", "");
       }
     } else {
-      globals.email = "";
+      globals.email.setItem("email", "");
       if (res.toString().contains("status")) {
         Map maps = jsonDecode(res);
         message = maps["errors"].toString();
@@ -123,11 +123,16 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
             leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () {
-                  // runApp(const Login());
-                  Navigator.push(context,
-                      MaterialPageRoute<void>(builder: (BuildContext context) {
-                    return const LoginPage();
-                  }));
+                  if (globals.goPage.getItem("goPage") == "Forgot Password") {
+                    Navigator.pop(context);
+                  } else {
+                    runApp(const Login());
+                  }
+
+                  // Navigator.push(context,
+                  //     MaterialPageRoute<void>(builder: (BuildContext context) {
+                  //   return const LoginPage();
+                  // }));
                 }),
             title: const Text('VerifyEmail')),
         body: SingleChildScrollView(

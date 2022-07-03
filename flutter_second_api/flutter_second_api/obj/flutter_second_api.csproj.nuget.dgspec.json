@@ -10,7 +10,7 @@
         "projectUniqueName": "D:\\AndyWorkspace\\Project\\Flutter-Second\\flutter_second_api\\flutter_second_api\\flutter_second_api.csproj",
         "projectName": "flutter_second_api",
         "projectPath": "D:\\AndyWorkspace\\Project\\Flutter-Second\\flutter_second_api\\flutter_second_api\\flutter_second_api.csproj",
-        "packagesPath": "C:\\Users\\zhtech\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
         "outputPath": "D:\\AndyWorkspace\\Project\\Flutter-Second\\flutter_second_api\\flutter_second_api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
@@ -18,7 +18,7 @@
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
         ],
         "configFilePaths": [
-          "C:\\Users\\zhtech\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],

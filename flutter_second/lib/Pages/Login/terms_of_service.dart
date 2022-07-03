@@ -111,7 +111,7 @@ class _TermsOfServicePageState extends State<TermsOfServicePage> {
               minWidth: 40.0,
               child: OutlinedButton(
                 onPressed: () {
-                  globals.goPage = "Register";
+                  globals.goPage.setItem("goPage", "Register");
                   runApp(const VerifyEmail());
                 },
                 style: OutlinedButton.styleFrom(
@@ -129,7 +129,8 @@ class _TermsOfServicePageState extends State<TermsOfServicePage> {
               minWidth: 40.0,
               child: OutlinedButton(
                 onPressed: () {
-                  runApp(const Login());
+                  // runApp(const Login());
+                  Navigator.pop(context);
                 },
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
