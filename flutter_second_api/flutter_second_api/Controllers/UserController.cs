@@ -32,7 +32,7 @@ namespace flutter_second_api.Controllers
             {
                 if (_context.Users.Any(u => u.Email == request.Email))
                 {
-                    return BadRequest("User already exists.");
+                    return BadRequest("此信箱已註冊過");
                 }
 
                 CreatePasswordHash(request.Password,
@@ -122,7 +122,7 @@ namespace flutter_second_api.Controllers
 
                 if (user == null)
                 {
-                    return BadRequest("Invaild token.");
+                    return BadRequest("無效的 token.");
                 }
 
                 DateTime dt = DateTime.Now;
@@ -158,7 +158,7 @@ namespace flutter_second_api.Controllers
 
                 if (user == null)
                 {
-                    return BadRequest("User not found.");
+                    return BadRequest("查無使用者.");
                 }
 
                 DateTime dt = DateTime.Now.AddDays(1);
@@ -196,7 +196,7 @@ namespace flutter_second_api.Controllers
 
                 if (user == null || user.ResetTokenExpires < DateTime.Now)
                 {
-                    return BadRequest("Invaild token.");
+                    return BadRequest("無效的 token.");
                 }
 
                 CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -265,6 +265,14 @@ namespace flutter_second_api.Controllers
             if (email != "")
             {
                 claims.Add(new Claim(ClaimTypes.Email, email));
+                if (email.Contains("zhtech"))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, "admin"));
+                }
+                else
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, "general"));
+                }
             }
 
             if (dt != DateTime.MinValue)

@@ -21,12 +21,12 @@ namespace flutter_second_api.Service.UserService
         /// 取得使用者名稱
         /// </summary>
         /// <returns>Name</returns>
-        public string GetMyName()
+        public string GetUserRole()
         {
             var result = string.Empty;
             if (_httpContextAccessor.HttpContext != null)
             {
-                result = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Name);
+                result = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
             }
             return result;
         }

@@ -5,6 +5,6 @@
     /// </summary>
     public interface IUserService
     {
-        string GetMyName();
+        string GetUserRole();
     }
 }

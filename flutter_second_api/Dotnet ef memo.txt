@@ -1,0 +1,17 @@
+安裝 EF :
+dotnet tool install dotnet-ef 
+
+配置完DbContext後 初始化
+dotnet ef migrations add Initial
+
+dotnet ef database update
+
+
+刪除
+
+Migrations資料夾
+
+dotnet ef migrations add flutter_second
+
+dotnet ef database update
+
